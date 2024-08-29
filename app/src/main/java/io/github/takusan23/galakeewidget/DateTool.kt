@@ -15,7 +15,7 @@ object DateTool {
         val dateFormat = SimpleDateFormat("yyyy年($nowEra)\nM月d日(E曜日)", locale)
         val timeFormat = SimpleDateFormat("HH:mm", locale)
         val calender = Runtime.getRuntime().exec(arrayOf("cal")).inputStream.bufferedReader().use { bufferedReader ->
-            bufferedReader.readText()
+            bufferedReader.readText().trimEnd() // 最後いらない
         }
 
         return DateData(

@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.glance.ColorFilter
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
 import androidx.glance.GlanceTheme
@@ -25,6 +26,7 @@ import androidx.glance.background
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
 import androidx.glance.layout.Column
+import androidx.glance.layout.ContentScale
 import androidx.glance.layout.Row
 import androidx.glance.layout.Spacer
 import androidx.glance.layout.fillMaxHeight
@@ -46,8 +48,23 @@ class GarakeeWidget : GlanceAppWidget() {
 
             GlanceTheme {
                 when (routing.value) {
-                    Routing.Standby -> StandbyScreen(context)
-                    Routing.Menu -> MenuScreen(context)
+                    Routing.Standby -> StandbyScreen(
+                        context = context,
+                        onMenuClick = { routing.value = Routing.Menu },
+                        onCloseClick = { routing.value = Routing.Standby },
+                        onFirstClick = {},
+                        onSecondsClick = {},
+                        onThirdClick = {}
+                    )
+
+                    Routing.Menu -> MenuScreen(
+                        context = context,
+                        onMenuClick = { routing.value = Routing.Standby },
+                        onCloseClick = { routing.value = Routing.Standby },
+                        onFirstClick = {},
+                        onSecondsClick = {},
+                        onThirdClick = {}
+                    )
                 }
             }
         }
@@ -55,8 +72,14 @@ class GarakeeWidget : GlanceAppWidget() {
 
     /** 待ち受け画面 */
     @Composable
-    private fun StandbyScreen(context: Context) {
-
+    private fun StandbyScreen(
+        context: Context,
+        onMenuClick: () -> Unit,
+        onCloseClick: () -> Unit,
+        onFirstClick: () -> Unit,
+        onSecondsClick: () -> Unit,
+        onThirdClick: () -> Unit
+    ) {
         val dateData = remember { DateTool.createDateData() }
 
         Row(
@@ -73,7 +96,7 @@ class GarakeeWidget : GlanceAppWidget() {
             ) {
                 Text(
                     text = dateData.time,
-                    style = TextStyle(fontSize = 20.sp)
+                    style = TextStyle(fontSize = 24.sp)
                 )
 
                 Spacer(GlanceModifier.height(5.dp))
@@ -82,20 +105,34 @@ class GarakeeWidget : GlanceAppWidget() {
                     style = TextStyle(fontSize = 16.sp)
                 )
 
-                Spacer(GlanceModifier.height(5.dp))
+                Spacer(GlanceModifier.defaultWeight())
                 Text(
                     text = dateData.calender,
                     style = TextStyle(fontFamily = FontFamily.Monospace)
                 )
             }
 
-            GarakeeKeysUi()
+            GarakeeKeysUi(
+                modifier = GlanceModifier,
+                onMenuClick = onMenuClick,
+                onCloseClick = onCloseClick,
+                onFirstClick = onFirstClick,
+                onSecondsClick = onSecondsClick,
+                onThirdClick = onThirdClick
+            )
         }
     }
 
     /** メニュー画面 */
     @Composable
-    private fun MenuScreen(context: Context) {
+    private fun MenuScreen(
+        context: Context,
+        onMenuClick: () -> Unit,
+        onCloseClick: () -> Unit,
+        onFirstClick: () -> Unit,
+        onSecondsClick: () -> Unit,
+        onThirdClick: () -> Unit
+    ) {
         val suggestAppList = remember { mutableStateOf(emptyList<AppListTool.AppInfoData>()) }
 
         LaunchedEffect(key1 = Unit) {
@@ -151,13 +188,27 @@ class GarakeeWidget : GlanceAppWidget() {
                 }
             }
 
-            GarakeeKeysUi()
+            GarakeeKeysUi(
+                modifier = GlanceModifier,
+                onMenuClick = onMenuClick,
+                onCloseClick = onCloseClick,
+                onFirstClick = onFirstClick,
+                onSecondsClick = onSecondsClick,
+                onThirdClick = onThirdClick
+            )
         }
     }
 
-    /** ボタンとかがある部分のコンポーネント。幅 120dp くらい使います。 */
+    /** ボタンとかがある部分のコンポーネント。幅 100dp くらい使います。 */
     @Composable
-    private fun GarakeeKeysUi(modifier: GlanceModifier = GlanceModifier) {
+    private fun GarakeeKeysUi(
+        modifier: GlanceModifier = GlanceModifier,
+        onMenuClick: () -> Unit,
+        onCloseClick: () -> Unit,
+        onFirstClick: () -> Unit,
+        onSecondsClick: () -> Unit,
+        onThirdClick: () -> Unit
+    ) {
         Row(
             modifier = modifier
                 .padding(5.dp)
@@ -167,8 +218,25 @@ class GarakeeWidget : GlanceAppWidget() {
             Column(
                 modifier = GlanceModifier
                     .fillMaxHeight()
-                    .width(80.dp)
+                    .width(70.dp)
             ) {
+
+                // TODO アイコン自前で書きたい
+                Row(modifier = GlanceModifier.fillMaxWidth()) {
+                    Image(
+                        modifier = GlanceModifier.defaultWeight(),
+                        provider = ImageProvider(R.drawable.battery_3_bar_24px),
+                        contentDescription = null,
+                        colorFilter = ColorFilter.tint(GlanceTheme.colors.primary)
+                    )
+                    Image(
+                        modifier = GlanceModifier.defaultWeight(),
+                        provider = ImageProvider(R.drawable.signal_cellular_alt_24px),
+                        contentDescription = null,
+                        colorFilter = ColorFilter.tint(GlanceTheme.colors.primary)
+                    )
+                }
+
                 Text(
                     text = "12:34",
                     style = TextStyle(fontSize = 18.sp)
@@ -179,17 +247,26 @@ class GarakeeWidget : GlanceAppWidget() {
                 Spacer(GlanceModifier.height(5.dp))
                 GarakeeButton(
                     modifier = GlanceModifier.fillMaxWidth(),
-                    onClick = {}
+                    onClick = onMenuClick
                 ) {
-                    Text(text = "ﾒﾆｭｰ")
+                    Text(
+                        text = "ﾒﾆｭｰ",
+                        style = TextStyle(fontSize = 16.sp)
+                    )
                 }
 
                 Spacer(GlanceModifier.height(5.dp))
                 GarakeeButton(
                     modifier = GlanceModifier.fillMaxWidth(),
-                    onClick = {}
+                    onClick = onCloseClick
                 ) {
-                    Text(text = "閉じる")
+                    Image(
+                        modifier = GlanceModifier.padding(horizontal = 5.dp).fillMaxWidth(),
+                        provider = ImageProvider(R.drawable.call_end_24px),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        colorFilter = ColorFilter.tint(GlanceTheme.colors.error)
+                    )
                 }
             }
 
@@ -200,14 +277,18 @@ class GarakeeWidget : GlanceAppWidget() {
                     .fillMaxHeight()
                     .width(40.dp)
             ) {
-                listOf("ⅰ", "ⅱ", "ⅲ").forEach { text ->
+                listOf(
+                    "ⅰ" to onFirstClick,
+                    "ⅱ" to onSecondsClick,
+                    "ⅲ" to onThirdClick
+                ).forEach { (text, onClick) ->
 
                     Spacer(GlanceModifier.height(5.dp))
                     GarakeeButton(
                         modifier = GlanceModifier
                             .fillMaxWidth()
                             .defaultWeight(),
-                        onClick = {}
+                        onClick = onClick
                     ) {
                         Text(
                             text = text,
