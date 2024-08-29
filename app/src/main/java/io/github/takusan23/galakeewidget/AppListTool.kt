@@ -4,7 +4,13 @@ import android.app.usage.UsageStats
 import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
 import android.graphics.Bitmap
+import android.graphics.drawable.AdaptiveIconDrawable
+import android.graphics.drawable.Drawable
+import android.os.Build
+import androidx.annotation.RequiresApi
+import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -44,8 +50,7 @@ object AppListTool {
             .mapNotNull { (packageName, usageStats) ->
                 val applicationInfo = runCatching { packageManager.getApplicationInfo(packageName, 0) }.getOrNull() ?: return@mapNotNull null
                 val intent = packageManager.getLaunchIntentForPackage(packageName) ?: return@mapNotNull null
-
-                val iconBitmap = applicationInfo.loadIcon(packageManager).toBitmap()
+                val iconBitmap = createAppIconBitmap(context, packageName)
                 val appLabel = packageManager.getApplicationLabel(applicationInfo).toString()
                 AppInfoData(
                     packageName = packageName,
@@ -59,6 +64,44 @@ object AppListTool {
             .sortedByDescending { it.foregroundUsageTimeMs }
     }
 
+    /**
+     * アイコンの Bitmap を作成する。テーマアイコンに対応していれば色を自動的につける
+     *
+     * @param context [Context]
+     * @param drawable アイコンの[Drawable]。
+     * @see [android.content.pm.ActivityInfo.loadIcon]
+     * @return アイコン画像。テーマアイコンに対応していればテーマアイコンを返す
+     */
+    private fun createAppIconBitmap(context: Context, packageName: String): Bitmap {
+        val packageInfo = context.packageManager.getApplicationInfo(packageName, 0)
+        val drawable = packageInfo.loadIcon(context.packageManager)
+        return when {
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && drawable is AdaptiveIconDrawable && drawable.monochrome != null -> drawable.monochrome!!.apply {
+                val (_, foregroundColor) = getThemeIconColorPair(context)
+                mutate()
+                setTint(foregroundColor)
+            }
+
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && drawable is AdaptiveIconDrawable -> drawable.foreground
+            else -> drawable
+        }.toBitmap()
+    }
+
+    /**
+     * テーマアイコンの時のバックグラウンド・フォアグラウンドの色を取得する
+     * https://cs.android.com/android/platform/superproject/+/refs/heads/master:frameworks/libs/systemui/iconloaderlib/src/com/android/launcher3/icons/ThemedIconDrawable.java
+     *
+     * @param context [Context]
+     * @return バックグラウンド・フォアグラウンドのPair
+     */
+    @RequiresApi(Build.VERSION_CODES.S)
+    private fun getThemeIconColorPair(context: Context): Pair<Int, Int> {
+        return if (context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES) {
+            ContextCompat.getColor(context, android.R.color.system_neutral1_800) to ContextCompat.getColor(context, android.R.color.system_accent1_100)
+        } else {
+            ContextCompat.getColor(context, android.R.color.system_accent1_100) to ContextCompat.getColor(context, android.R.color.system_neutral2_700)
+        }
+    }
 
     /**
      * アプリのアイコンと名前と起動インテント

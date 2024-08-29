@@ -68,7 +68,7 @@ class GarakeeWidget : GlanceAppWidget() {
                     CircularProgressIndicator()
                 }
             } else {
-                LazyVerticalGrid(gridCells = GridCells.Fixed(4)) {
+                LazyVerticalGrid(gridCells = GridCells.Fixed(3)) {
                     items(suggestAppList.value) { appInfo ->
                         Column(
                             modifier = GlanceModifier.clickable(actionStartActivity(appInfo.intent)),
@@ -76,7 +76,9 @@ class GarakeeWidget : GlanceAppWidget() {
                             horizontalAlignment = Alignment.Horizontal.CenterHorizontally
                         ) {
                             Image(
-                                modifier = GlanceModifier.padding(horizontal = 7.dp),
+                                modifier = GlanceModifier
+                                    .fillMaxWidth()
+                                    .height(50.dp),
                                 provider = ImageProvider(appInfo.icon),
                                 contentDescription = null
                             )
@@ -100,7 +102,7 @@ class GarakeeWidget : GlanceAppWidget() {
         Row(
             modifier = modifier
                 .fillMaxSize()
-                .background(GlanceTheme.colors.primaryContainer)
+                .background(GlanceTheme.colors.secondaryContainer)
         ) {
 
             Box(
@@ -111,7 +113,7 @@ class GarakeeWidget : GlanceAppWidget() {
             Row(
                 modifier = GlanceModifier
                     .padding(5.dp)
-                    .background(GlanceTheme.colors.secondaryContainer)
+                    .background(GlanceTheme.colors.primaryContainer)
             ) {
 
                 Column(
