@@ -33,6 +33,7 @@ import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.height
 import androidx.glance.layout.padding
 import androidx.glance.layout.width
+import androidx.glance.text.FontFamily
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
@@ -41,12 +42,58 @@ class GarakeeWidget : GlanceAppWidget() {
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         provideContent {
+            val routing = remember { mutableStateOf(Routing.Standby) }
+
             GlanceTheme {
-                MenuScreen(context)
+                when (routing.value) {
+                    Routing.Standby -> StandbyScreen(context)
+                    Routing.Menu -> MenuScreen(context)
+                }
             }
         }
     }
 
+    /** 待ち受け画面 */
+    @Composable
+    private fun StandbyScreen(context: Context) {
+
+        val dateData = remember { DateTool.createDateData() }
+
+        Row(
+            modifier = GlanceModifier
+                .fillMaxSize()
+                .background(GlanceTheme.colors.primaryContainer)
+        ) {
+
+            Column(
+                modifier = GlanceModifier
+                    .padding(10.dp)
+                    .defaultWeight()
+                    .fillMaxHeight(),
+            ) {
+                Text(
+                    text = dateData.time,
+                    style = TextStyle(fontSize = 20.sp)
+                )
+
+                Spacer(GlanceModifier.height(5.dp))
+                Text(
+                    text = dateData.date,
+                    style = TextStyle(fontSize = 16.sp)
+                )
+
+                Spacer(GlanceModifier.height(5.dp))
+                Text(
+                    text = dateData.calender,
+                    style = TextStyle(fontFamily = FontFamily.Monospace)
+                )
+            }
+
+            GarakeeKeysUi()
+        }
+    }
+
+    /** メニュー画面 */
     @Composable
     private fun MenuScreen(context: Context) {
         val suggestAppList = remember { mutableStateOf(emptyList<AppListTool.AppInfoData>()) }
@@ -58,17 +105,29 @@ class GarakeeWidget : GlanceAppWidget() {
             )
         }
 
-        GarakeeScaffold {
+        Row(
+            modifier = GlanceModifier
+                .fillMaxSize()
+                .background(GlanceTheme.colors.primaryContainer)
+        ) {
+
             if (suggestAppList.value.isEmpty()) {
                 // 読み込み中
                 Box(
-                    modifier = GlanceModifier.fillMaxSize(),
+                    modifier = GlanceModifier
+                        .defaultWeight()
+                        .fillMaxHeight(),
                     contentAlignment = Alignment.Center
                 ) {
                     CircularProgressIndicator()
                 }
             } else {
-                LazyVerticalGrid(gridCells = GridCells.Fixed(3)) {
+                LazyVerticalGrid(
+                    modifier = GlanceModifier
+                        .defaultWeight()
+                        .fillMaxHeight(),
+                    gridCells = GridCells.Fixed(3)
+                ) {
                     items(suggestAppList.value) { appInfo ->
                         Column(
                             modifier = GlanceModifier.clickable(actionStartActivity(appInfo.intent)),
@@ -91,81 +150,69 @@ class GarakeeWidget : GlanceAppWidget() {
                     }
                 }
             }
+
+            GarakeeKeysUi()
         }
     }
 
+    /** ボタンとかがある部分のコンポーネント。幅 120dp くらい使います。 */
     @Composable
-    private fun GarakeeScaffold(
-        modifier: GlanceModifier = GlanceModifier,
-        main: @Composable () -> Unit
-    ) {
+    private fun GarakeeKeysUi(modifier: GlanceModifier = GlanceModifier) {
         Row(
             modifier = modifier
-                .fillMaxSize()
+                .padding(5.dp)
                 .background(GlanceTheme.colors.secondaryContainer)
         ) {
 
-            Box(
-                modifier = GlanceModifier.defaultWeight(),
-                content = main
-            )
-
-            Row(
+            Column(
                 modifier = GlanceModifier
-                    .padding(5.dp)
-                    .background(GlanceTheme.colors.primaryContainer)
+                    .fillMaxHeight()
+                    .width(80.dp)
             ) {
+                Text(
+                    text = "12:34",
+                    style = TextStyle(fontSize = 18.sp)
+                )
 
-                Column(
-                    modifier = GlanceModifier
-                        .fillMaxHeight()
-                        .width(80.dp)
+                Spacer(GlanceModifier.defaultWeight())
+
+                Spacer(GlanceModifier.height(5.dp))
+                GarakeeButton(
+                    modifier = GlanceModifier.fillMaxWidth(),
+                    onClick = {}
                 ) {
-                    Text(
-                        text = "12:34",
-                        style = TextStyle(fontSize = 18.sp)
-                    )
-
-                    Spacer(GlanceModifier.defaultWeight())
-
-                    Spacer(GlanceModifier.height(5.dp))
-                    GarakeeButton(
-                        modifier = GlanceModifier.fillMaxWidth(),
-                        onClick = {}
-                    ) {
-                        Text(text = "ﾒﾆｭｰ")
-                    }
-
-                    Spacer(GlanceModifier.height(5.dp))
-                    GarakeeButton(
-                        modifier = GlanceModifier.fillMaxWidth(),
-                        onClick = {}
-                    ) {
-                        Text(text = "閉じる")
-                    }
+                    Text(text = "ﾒﾆｭｰ")
                 }
 
-                Spacer(GlanceModifier.width(5.dp))
-
-                Column(
-                    modifier = GlanceModifier
-                        .fillMaxHeight()
-                        .width(40.dp)
+                Spacer(GlanceModifier.height(5.dp))
+                GarakeeButton(
+                    modifier = GlanceModifier.fillMaxWidth(),
+                    onClick = {}
                 ) {
-                    listOf("ⅰ", "ⅱ", "ⅲ").forEach { text ->
+                    Text(text = "閉じる")
+                }
+            }
 
-                        Spacer(GlanceModifier.height(5.dp))
-                        GarakeeButton(
-                            modifier = GlanceModifier
-                                .fillMaxWidth()
-                                .defaultWeight(),
-                            onClick = {}
-                        ) {
-                            Text(
-                                text = text,
-                                style = TextStyle(fontWeight = FontWeight.Bold)
-                            )
-                        }
+            Spacer(GlanceModifier.width(5.dp))
+
+            Column(
+                modifier = GlanceModifier
+                    .fillMaxHeight()
+                    .width(40.dp)
+            ) {
+                listOf("ⅰ", "ⅱ", "ⅲ").forEach { text ->
+
+                    Spacer(GlanceModifier.height(5.dp))
+                    GarakeeButton(
+                        modifier = GlanceModifier
+                            .fillMaxWidth()
+                            .defaultWeight(),
+                        onClick = {}
+                    ) {
+                        Text(
+                            text = text,
+                            style = TextStyle(fontWeight = FontWeight.Bold)
+                        )
                     }
                 }
             }
@@ -188,4 +235,10 @@ class GarakeeWidget : GlanceAppWidget() {
             content = content
         )
     }
+
+    enum class Routing {
+        Standby,
+        Menu
+    }
+
 }
