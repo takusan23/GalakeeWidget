@@ -1,4 +1,4 @@
-package io.github.takusan23.galakeewidget
+package io.github.takusan23.galakeewidget.tool
 
 import android.app.usage.UsageStats
 import android.app.usage.UsageStatsManager

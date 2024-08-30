@@ -1,10 +1,12 @@
 package io.github.takusan23.galakeewidget
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -15,6 +17,8 @@ import androidx.glance.GlanceModifier
 import androidx.glance.GlanceTheme
 import androidx.glance.Image
 import androidx.glance.ImageProvider
+import androidx.glance.action.Action
+import androidx.glance.action.action
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.CircularProgressIndicator
 import androidx.glance.appwidget.GlanceAppWidget
@@ -43,7 +47,12 @@ import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
 import com.bumptech.glide.Glide
-import io.github.takusan23.galakeewidget.DataStore.getWallpaperUriList
+import io.github.takusan23.galakeewidget.tool.AppListTool
+import io.github.takusan23.galakeewidget.tool.DataStore
+import io.github.takusan23.galakeewidget.tool.DataStore.getShortcutAppIdData
+import io.github.takusan23.galakeewidget.tool.DataStore.getWallpaperUriList
+import io.github.takusan23.galakeewidget.tool.DateTool
+import io.github.takusan23.galakeewidget.tool.dataStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
@@ -53,25 +62,29 @@ class GarakeeWidget : GlanceAppWidget() {
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         provideContent {
             val routing = remember { mutableStateOf(Routing.Standby) }
+            val shortcutAppIdData = produceState<DataStore.ShortcutAppIdData?>(
+                initialValue = null,
+                producer = { context.dataStore.data.collect { this.value = it.getShortcutAppIdData() } }
+            )
 
             GlanceTheme {
                 when (routing.value) {
                     Routing.Standby -> StandbyScreen(
                         context = context,
-                        onMenuClick = { routing.value = Routing.Menu },
-                        onCloseClick = { routing.value = Routing.Standby },
-                        onFirstClick = {},
-                        onSecondsClick = {},
-                        onThirdClick = {}
+                        onMenuClick = action { routing.value = Routing.Menu },
+                        onCloseClick = action { routing.value = Routing.Standby },
+                        onOneClick = actionStartActivity(context, applicationId = shortcutAppIdData.value?.one),
+                        onTwoClick = actionStartActivity(context, applicationId = shortcutAppIdData.value?.two),
+                        onThreeClick = actionStartActivity(context, applicationId = shortcutAppIdData.value?.three)
                     )
 
                     Routing.Menu -> MenuScreen(
                         context = context,
-                        onMenuClick = { routing.value = Routing.Standby },
-                        onCloseClick = { routing.value = Routing.Standby },
-                        onFirstClick = {},
-                        onSecondsClick = {},
-                        onThirdClick = {}
+                        onMenuClick = action { routing.value = Routing.Standby },
+                        onCloseClick = action { routing.value = Routing.Standby },
+                        onOneClick = actionStartActivity(context, applicationId = shortcutAppIdData.value?.one),
+                        onTwoClick = actionStartActivity(context, applicationId = shortcutAppIdData.value?.two),
+                        onThreeClick = actionStartActivity(context, applicationId = shortcutAppIdData.value?.three)
                     )
                 }
             }
@@ -82,11 +95,11 @@ class GarakeeWidget : GlanceAppWidget() {
     @Composable
     private fun StandbyScreen(
         context: Context,
-        onMenuClick: () -> Unit,
-        onCloseClick: () -> Unit,
-        onFirstClick: () -> Unit,
-        onSecondsClick: () -> Unit,
-        onThirdClick: () -> Unit
+        onMenuClick: Action,
+        onCloseClick: Action,
+        onOneClick: Action,
+        onTwoClick: Action,
+        onThreeClick: Action
     ) {
         val dateData = remember { DateTool.createDateData() }
         val wallpaperBitmap = remember { mutableStateOf<Bitmap?>(null) }
@@ -160,9 +173,9 @@ class GarakeeWidget : GlanceAppWidget() {
                 modifier = GlanceModifier,
                 onMenuClick = onMenuClick,
                 onCloseClick = onCloseClick,
-                onFirstClick = onFirstClick,
-                onSecondsClick = onSecondsClick,
-                onThirdClick = onThirdClick
+                onOneClick = onOneClick,
+                onTwoClick = onTwoClick,
+                onThreeClick = onThreeClick
             )
         }
     }
@@ -171,11 +184,11 @@ class GarakeeWidget : GlanceAppWidget() {
     @Composable
     private fun MenuScreen(
         context: Context,
-        onMenuClick: () -> Unit,
-        onCloseClick: () -> Unit,
-        onFirstClick: () -> Unit,
-        onSecondsClick: () -> Unit,
-        onThirdClick: () -> Unit
+        onMenuClick: Action,
+        onCloseClick: Action,
+        onOneClick: Action,
+        onTwoClick: Action,
+        onThreeClick: Action
     ) {
         val suggestAppList = remember { mutableStateOf(emptyList<AppListTool.AppInfoData>()) }
 
@@ -236,9 +249,9 @@ class GarakeeWidget : GlanceAppWidget() {
                 modifier = GlanceModifier.background(GlanceTheme.colors.secondaryContainer),
                 onMenuClick = onMenuClick,
                 onCloseClick = onCloseClick,
-                onFirstClick = onFirstClick,
-                onSecondsClick = onSecondsClick,
-                onThirdClick = onThirdClick
+                onOneClick = onOneClick,
+                onTwoClick = onTwoClick,
+                onThreeClick = onThreeClick
             )
         }
     }
@@ -247,11 +260,11 @@ class GarakeeWidget : GlanceAppWidget() {
     @Composable
     private fun GarakeeKeysUi(
         modifier: GlanceModifier = GlanceModifier,
-        onMenuClick: () -> Unit,
-        onCloseClick: () -> Unit,
-        onFirstClick: () -> Unit,
-        onSecondsClick: () -> Unit,
-        onThirdClick: () -> Unit
+        onMenuClick: Action,
+        onCloseClick: Action,
+        onOneClick: Action,
+        onTwoClick: Action,
+        onThreeClick: Action
     ) {
         Row(modifier = modifier.padding(5.dp)) {
 
@@ -318,9 +331,9 @@ class GarakeeWidget : GlanceAppWidget() {
                     .width(40.dp)
             ) {
                 listOf(
-                    "ⅰ" to onFirstClick,
-                    "ⅱ" to onSecondsClick,
-                    "ⅲ" to onThirdClick
+                    "ⅰ" to onOneClick,
+                    "ⅱ" to onTwoClick,
+                    "ⅲ" to onThreeClick
                 ).forEach { (text, onClick) ->
 
                     Spacer(GlanceModifier.height(5.dp))
@@ -343,7 +356,7 @@ class GarakeeWidget : GlanceAppWidget() {
     @Composable
     private fun GarakeeButton(
         modifier: GlanceModifier = GlanceModifier,
-        onClick: () -> Unit,
+        onClick: Action,
         content: @Composable () -> Unit
     ) {
         Box(
@@ -356,6 +369,18 @@ class GarakeeWidget : GlanceAppWidget() {
             content = content
         )
     }
+
+    /** [actionStartActivity]のアプリケーション ID 指定版 */
+    private fun actionStartActivity(
+        context: Context,
+        applicationId: String?
+    ): Action = actionStartActivity(
+        intent = if (applicationId == null) {
+            Intent()
+        } else {
+            context.packageManager.getLaunchIntentForPackage(applicationId)!!
+        }
+    )
 
     enum class Routing {
         Standby,
