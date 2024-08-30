@@ -91,7 +91,7 @@ class GarakeeWidget : GlanceAppWidget() {
         val dateData = remember { DateTool.createDateData() }
         val wallpaperBitmap = remember { mutableStateOf<Bitmap?>(null) }
 
-        // 待ち受け画面の壁紙をロードする、小さくして
+        // 待ち受け画面の壁紙をロードする、ランダムで取り出して小さくしてから
         LaunchedEffect(key1 = Unit) {
             val uri = context.dataStore.data.first().getWallpaperUriList().randomOrNull() ?: return@LaunchedEffect
             wallpaperBitmap.value = withContext(Dispatchers.IO) {
@@ -127,24 +127,26 @@ class GarakeeWidget : GlanceAppWidget() {
                     .defaultWeight()
                     .fillMaxHeight(),
             ) {
-                Text(
-                    text = dateData.time,
-                    style = TextStyle(
-                        fontSize = 24.sp,
-                        color = GlanceTheme.colors.primaryContainer
-                    )
-                )
 
-                Spacer(GlanceModifier.height(5.dp))
-                Text(
-                    text = dateData.date,
-                    style = TextStyle(
-                        fontSize = 16.sp,
-                        color = GlanceTheme.colors.primaryContainer
+                Row(verticalAlignment = Alignment.Vertical.CenterVertically) {
+                    Text(
+                        text = dateData.time,
+                        style = TextStyle(
+                            fontSize = 24.sp,
+                            color = GlanceTheme.colors.primaryContainer
+                        )
                     )
-                )
 
-                Spacer(GlanceModifier.defaultWeight())
+                    Spacer(GlanceModifier.width(10.dp))
+                    Text(
+                        text = dateData.date,
+                        style = TextStyle(
+                            fontSize = 16.sp,
+                            color = GlanceTheme.colors.primaryContainer
+                        )
+                    )
+                }
+
                 Text(
                     text = dateData.calender,
                     style = TextStyle(
