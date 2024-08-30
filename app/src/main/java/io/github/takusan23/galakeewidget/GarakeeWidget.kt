@@ -1,10 +1,12 @@
 package io.github.takusan23.galakeewidget
 
 import android.content.Context
+import android.graphics.Bitmap
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.ColorFilter
@@ -39,6 +41,12 @@ import androidx.glance.text.FontFamily
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
+import androidx.glance.unit.ColorProvider
+import com.bumptech.glide.Glide
+import io.github.takusan23.galakeewidget.DataStore.getWallpaperUriList
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withContext
 
 class GarakeeWidget : GlanceAppWidget() {
 
@@ -81,11 +89,36 @@ class GarakeeWidget : GlanceAppWidget() {
         onThirdClick: () -> Unit
     ) {
         val dateData = remember { DateTool.createDateData() }
+        val wallpaperBitmap = remember { mutableStateOf<Bitmap?>(null) }
+
+        // 待ち受け画面の壁紙をロードする、小さくして
+        LaunchedEffect(key1 = Unit) {
+            val uri = context.dataStore.data.first().getWallpaperUriList().randomOrNull() ?: return@LaunchedEffect
+            wallpaperBitmap.value = withContext(Dispatchers.IO) {
+                Glide.with(context)
+                    .asBitmap()
+                    .load(uri)
+                    .submit(400, 400)
+                    .get()
+            }
+        }
 
         Row(
             modifier = GlanceModifier
                 .fillMaxSize()
-                .background(GlanceTheme.colors.primaryContainer)
+                .then(
+                    if (wallpaperBitmap.value != null) {
+                        GlanceModifier.background(
+                            imageProvider = ImageProvider(wallpaperBitmap.value!!),
+                            contentScale = ContentScale.Crop,
+                            colorFilter = ColorFilter.tint(ColorProvider(Color.Black.copy(0.3f)))
+                        )
+                    } else {
+                        GlanceModifier.background(
+                            colorProvider = ColorProvider(Color.Black.copy(0.3f))
+                        )
+                    }
+                )
         ) {
 
             Column(
@@ -96,19 +129,28 @@ class GarakeeWidget : GlanceAppWidget() {
             ) {
                 Text(
                     text = dateData.time,
-                    style = TextStyle(fontSize = 24.sp)
+                    style = TextStyle(
+                        fontSize = 24.sp,
+                        color = GlanceTheme.colors.primaryContainer
+                    )
                 )
 
                 Spacer(GlanceModifier.height(5.dp))
                 Text(
                     text = dateData.date,
-                    style = TextStyle(fontSize = 16.sp)
+                    style = TextStyle(
+                        fontSize = 16.sp,
+                        color = GlanceTheme.colors.primaryContainer
+                    )
                 )
 
                 Spacer(GlanceModifier.defaultWeight())
                 Text(
                     text = dateData.calender,
-                    style = TextStyle(fontFamily = FontFamily.Monospace)
+                    style = TextStyle(
+                        fontFamily = FontFamily.Monospace,
+                        color = GlanceTheme.colors.primaryContainer
+                    )
                 )
             }
 
@@ -189,7 +231,7 @@ class GarakeeWidget : GlanceAppWidget() {
             }
 
             GarakeeKeysUi(
-                modifier = GlanceModifier,
+                modifier = GlanceModifier.background(GlanceTheme.colors.secondaryContainer),
                 onMenuClick = onMenuClick,
                 onCloseClick = onCloseClick,
                 onFirstClick = onFirstClick,
@@ -209,11 +251,7 @@ class GarakeeWidget : GlanceAppWidget() {
         onSecondsClick: () -> Unit,
         onThirdClick: () -> Unit
     ) {
-        Row(
-            modifier = modifier
-                .padding(5.dp)
-                .background(GlanceTheme.colors.secondaryContainer)
-        ) {
+        Row(modifier = modifier.padding(5.dp)) {
 
             Column(
                 modifier = GlanceModifier

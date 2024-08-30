@@ -53,6 +53,8 @@ dependencies {
     implementation("androidx.glance:glance-appwidget:1.1.0")
     // For interop APIs with Material 3
     implementation("androidx.glance:glance-material3:1.1.0")
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
