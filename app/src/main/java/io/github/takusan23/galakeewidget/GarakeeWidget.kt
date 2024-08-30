@@ -44,6 +44,7 @@ import androidx.glance.layout.width
 import androidx.glance.text.FontFamily
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
+import androidx.glance.text.TextAlign
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
 import com.bumptech.glide.Glide
@@ -56,6 +57,8 @@ import io.github.takusan23.galakeewidget.tool.dataStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 class GarakeeWidget : GlanceAppWidget() {
 
@@ -160,6 +163,7 @@ class GarakeeWidget : GlanceAppWidget() {
                     )
                 }
 
+                Spacer(GlanceModifier.height(10.dp))
                 Text(
                     text = dateData.calender,
                     style = TextStyle(
@@ -171,6 +175,7 @@ class GarakeeWidget : GlanceAppWidget() {
 
             GarakeeKeysUi(
                 modifier = GlanceModifier,
+                statusBarContentColor = GlanceTheme.colors.primaryContainer,
                 onMenuClick = onMenuClick,
                 onCloseClick = onCloseClick,
                 onOneClick = onOneClick,
@@ -260,12 +265,15 @@ class GarakeeWidget : GlanceAppWidget() {
     @Composable
     private fun GarakeeKeysUi(
         modifier: GlanceModifier = GlanceModifier,
+        statusBarContentColor: ColorProvider = GlanceTheme.colors.primary,
         onMenuClick: Action,
         onCloseClick: Action,
         onOneClick: Action,
         onTwoClick: Action,
         onThreeClick: Action
     ) {
+        val simpleDateFormat = remember { SimpleDateFormat("HH:mm", Locale.JAPAN) }
+
         Row(modifier = modifier.padding(5.dp)) {
 
             Column(
@@ -274,25 +282,43 @@ class GarakeeWidget : GlanceAppWidget() {
                     .width(70.dp)
             ) {
 
-                // TODO アイコン自前で書きたい
+                // TODO アイコンを実際の状態に連動させたい
                 Row(modifier = GlanceModifier.fillMaxWidth()) {
                     Image(
-                        modifier = GlanceModifier.defaultWeight(),
-                        provider = ImageProvider(R.drawable.battery_3_bar_24px),
+                        modifier = GlanceModifier.height(30.dp).defaultWeight(),
+                        provider = ImageProvider(R.drawable.android_galakeewidget_battery_3),
                         contentDescription = null,
-                        colorFilter = ColorFilter.tint(GlanceTheme.colors.primary)
+                        colorFilter = ColorFilter.tint(statusBarContentColor)
                     )
                     Image(
-                        modifier = GlanceModifier.defaultWeight(),
-                        provider = ImageProvider(R.drawable.signal_cellular_alt_24px),
+                        modifier = GlanceModifier.height(30.dp).defaultWeight(),
+                        provider = ImageProvider(R.drawable.android_galakeewidget_antenna_3),
                         contentDescription = null,
-                        colorFilter = ColorFilter.tint(GlanceTheme.colors.primary)
+                        colorFilter = ColorFilter.tint(statusBarContentColor)
+                    )
+                }
+                Row(modifier = GlanceModifier.fillMaxWidth()) {
+                    Spacer(
+                        modifier = GlanceModifier.height(30.dp).defaultWeight(),
+                    )
+                    Image(
+                        modifier = GlanceModifier.height(30.dp).defaultWeight(),
+                        provider = ImageProvider(R.drawable.android_galakeewidget_vibration),
+                        contentDescription = null,
+                        colorFilter = ColorFilter.tint(statusBarContentColor)
                     )
                 }
 
+                Spacer(GlanceModifier.height(5.dp))
                 Text(
-                    text = "12:34",
-                    style = TextStyle(fontSize = 18.sp)
+                    modifier = GlanceModifier.fillMaxWidth(),
+                    text = simpleDateFormat.format(System.currentTimeMillis()),
+                    style = TextStyle(
+                        fontSize = 18.sp,
+                        color = statusBarContentColor,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.End
+                    )
                 )
 
                 Spacer(GlanceModifier.defaultWeight())
