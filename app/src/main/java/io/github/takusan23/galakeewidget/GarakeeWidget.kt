@@ -153,8 +153,8 @@ class GarakeeWidget : GlanceAppWidget() {
                         )
                     )
 
-                    Spacer(GlanceModifier.width(10.dp))
                     Text(
+                        modifier = GlanceModifier.padding(start = 10.dp),
                         text = dateData.date,
                         style = TextStyle(
                             fontSize = 16.sp,
@@ -163,8 +163,8 @@ class GarakeeWidget : GlanceAppWidget() {
                     )
                 }
 
-                Spacer(GlanceModifier.height(10.dp))
                 Text(
+                    modifier = GlanceModifier.padding(top = 10.dp),
                     text = dateData.calender,
                     style = TextStyle(
                         fontFamily = FontFamily.Monospace,
@@ -297,21 +297,39 @@ class GarakeeWidget : GlanceAppWidget() {
                         colorFilter = ColorFilter.tint(statusBarContentColor)
                     )
                 }
+
                 Row(modifier = GlanceModifier.fillMaxWidth()) {
-                    Spacer(
-                        modifier = GlanceModifier.height(30.dp).defaultWeight(),
-                    )
                     Image(
                         modifier = GlanceModifier.height(30.dp).defaultWeight(),
                         provider = ImageProvider(R.drawable.android_galakeewidget_vibration),
                         contentDescription = null,
                         colorFilter = ColorFilter.tint(statusBarContentColor)
                     )
+                    Image(
+                        modifier = GlanceModifier.height(30.dp).defaultWeight(),
+                        provider = ImageProvider(R.drawable.android_galakeewidget_sd),
+                        contentDescription = null,
+                        colorFilter = ColorFilter.tint(statusBarContentColor)
+                    )
                 }
 
-                Spacer(GlanceModifier.height(5.dp))
+                Row(modifier = GlanceModifier.fillMaxWidth()) {
+                    Image(
+                        modifier = GlanceModifier.height(30.dp).defaultWeight(),
+                        provider = ImageProvider(R.drawable.android_galakeewidget_wifi),
+                        contentDescription = null,
+                        colorFilter = ColorFilter.tint(statusBarContentColor)
+                    )
+                    Image(
+                        modifier = GlanceModifier.height(30.dp).defaultWeight(),
+                        provider = ImageProvider(R.drawable.android_galakeewidget_bluetooth),
+                        contentDescription = null,
+                        colorFilter = ColorFilter.tint(statusBarContentColor)
+                    )
+                }
+
                 Text(
-                    modifier = GlanceModifier.fillMaxWidth(),
+                    modifier = GlanceModifier.padding(top = 5.dp).fillMaxWidth(),
                     text = simpleDateFormat.format(System.currentTimeMillis()),
                     style = TextStyle(
                         fontSize = 18.sp,
