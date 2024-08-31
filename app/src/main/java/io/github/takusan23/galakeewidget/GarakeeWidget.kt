@@ -41,6 +41,7 @@ import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.height
 import androidx.glance.layout.padding
+import androidx.glance.layout.size
 import androidx.glance.layout.width
 import androidx.glance.text.FontFamily
 import androidx.glance.text.FontWeight
@@ -50,6 +51,7 @@ import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
 import com.bumptech.glide.Glide
 import io.github.takusan23.galakeewidget.tool.AppListTool
+import io.github.takusan23.galakeewidget.tool.BarometerWeatherTool
 import io.github.takusan23.galakeewidget.tool.DataStore
 import io.github.takusan23.galakeewidget.tool.DataStore.getNotificationIconList
 import io.github.takusan23.galakeewidget.tool.DataStore.getShortcutAppIdData
@@ -109,6 +111,7 @@ class GarakeeWidget : GlanceAppWidget() {
         val dateData = remember { DateTool.createDateData() }
         val wallpaperBitmap = remember { mutableStateOf<Bitmap?>(null) }
         val notificationIconList = remember { mutableStateOf(emptyList<Icon>()) }
+        val weather = remember { mutableStateOf<BarometerWeatherTool.Weather?>(null) }
 
         LaunchedEffect(key1 = Unit) {
             val preference = context.dataStore.data.first()
@@ -125,6 +128,9 @@ class GarakeeWidget : GlanceAppWidget() {
                     .submit(400, 400)
                     .get()
             }
+
+            // 気圧からおおよその天気
+            weather.value = BarometerWeatherTool.getBarometerWeather(context)
         }
 
         Row(
@@ -162,13 +168,29 @@ class GarakeeWidget : GlanceAppWidget() {
                     )
 
                     Text(
-                        modifier = GlanceModifier.padding(start = 10.dp),
+                        modifier = GlanceModifier.padding(start = 5.dp),
                         text = dateData.date,
                         style = TextStyle(
                             fontSize = 16.sp,
                             color = GlanceTheme.colors.primaryContainer
                         )
                     )
+
+                    if (weather.value != null) {
+                        Spacer(modifier = GlanceModifier.width(10.dp))
+                        Image(
+                            modifier = GlanceModifier.size(30.dp),
+                            provider = ImageProvider(
+                                resId = when (weather.value!!) {
+                                    BarometerWeatherTool.Weather.SUN -> R.drawable.clear_day_24px
+                                    BarometerWeatherTool.Weather.CLOUDY -> R.drawable.cloud_24px
+                                    BarometerWeatherTool.Weather.RAIN -> R.drawable.rainy_24px
+                                }
+                            ),
+                            contentDescription = null,
+                            colorFilter = ColorFilter.tint(GlanceTheme.colors.primaryContainer)
+                        )
+                    }
                 }
 
                 Text(
