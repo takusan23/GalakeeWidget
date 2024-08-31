@@ -3,6 +3,7 @@ package io.github.takusan23.galakeewidget
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.drawable.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
@@ -50,6 +51,7 @@ import androidx.glance.unit.ColorProvider
 import com.bumptech.glide.Glide
 import io.github.takusan23.galakeewidget.tool.AppListTool
 import io.github.takusan23.galakeewidget.tool.DataStore
+import io.github.takusan23.galakeewidget.tool.DataStore.getNotificationIconList
 import io.github.takusan23.galakeewidget.tool.DataStore.getShortcutAppIdData
 import io.github.takusan23.galakeewidget.tool.DataStore.getWallpaperUriList
 import io.github.takusan23.galakeewidget.tool.DateTool
@@ -106,10 +108,16 @@ class GarakeeWidget : GlanceAppWidget() {
     ) {
         val dateData = remember { DateTool.createDateData() }
         val wallpaperBitmap = remember { mutableStateOf<Bitmap?>(null) }
+        val notificationIconList = remember { mutableStateOf(emptyList<Icon>()) }
 
-        // 待ち受け画面の壁紙をロードする、ランダムで取り出して小さくしてから
         LaunchedEffect(key1 = Unit) {
-            val uri = context.dataStore.data.first().getWallpaperUriList().randomOrNull() ?: return@LaunchedEffect
+            val preference = context.dataStore.data.first()
+
+            // 通知アイコンを取り出す
+            notificationIconList.value = context.dataStore.data.first().getNotificationIconList(context)
+
+            // 待ち受け画面の壁紙をロードする、ランダムで取り出して小さくしてから
+            val uri = preference.getWallpaperUriList().randomOrNull() ?: return@LaunchedEffect
             wallpaperBitmap.value = withContext(Dispatchers.IO) {
                 Glide.with(context)
                     .asBitmap()
@@ -171,6 +179,21 @@ class GarakeeWidget : GlanceAppWidget() {
                         color = GlanceTheme.colors.primaryContainer
                     )
                 )
+
+                Spacer(modifier = GlanceModifier.defaultWeight())
+
+                Row {
+                    notificationIconList.value.forEach { icon ->
+                        Image(
+                            modifier = GlanceModifier
+                                .height(20.dp)
+                                .width(30.dp),
+                            provider = ImageProvider(icon),
+                            colorFilter = ColorFilter.tint(GlanceTheme.colors.primaryContainer),
+                            contentDescription = null
+                        )
+                    }
+                }
             }
 
             GarakeeKeysUi(

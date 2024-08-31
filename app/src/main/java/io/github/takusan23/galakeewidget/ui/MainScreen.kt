@@ -109,6 +109,9 @@ fun MainScreen() {
             Button(onClick = { context.startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)) }) {
                 Text(text = "利用状況へのアクセス権限")
             }
+            Button(onClick = { context.startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)) }) {
+                Text(text = "通知領域へのアクセス権限")
+            }
 
             Text(text = "待ち受け画面")
             Button(onClick = { photoPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }) {
