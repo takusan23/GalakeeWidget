@@ -3,7 +3,6 @@ package io.github.takusan23.galakeewidget
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
-import android.graphics.drawable.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
@@ -41,7 +40,6 @@ import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.height
 import androidx.glance.layout.padding
-import androidx.glance.layout.size
 import androidx.glance.layout.width
 import androidx.glance.text.FontFamily
 import androidx.glance.text.FontWeight
@@ -110,14 +108,14 @@ class GarakeeWidget : GlanceAppWidget() {
     ) {
         val dateData = remember { DateTool.createDateData() }
         val wallpaperBitmap = remember { mutableStateOf<Bitmap?>(null) }
-        val notificationIconList = remember { mutableStateOf(emptyList<Icon>()) }
+        val notificationData = remember { mutableStateOf<DataStore.NotificationData?>(null) }
         val weather = remember { mutableStateOf<BarometerWeatherTool.Weather?>(null) }
 
         LaunchedEffect(key1 = Unit) {
             val preference = context.dataStore.data.first()
 
             // 通知アイコンを取り出す
-            notificationIconList.value = context.dataStore.data.first().getNotificationIconList(context)
+            notificationData.value = preference.getNotificationIconList()
 
             // 待ち受け画面の壁紙をロードする、ランダムで取り出して小さくしてから
             val uri = preference.getWallpaperUriList().randomOrNull() ?: return@LaunchedEffect
@@ -153,12 +151,14 @@ class GarakeeWidget : GlanceAppWidget() {
 
             Column(
                 modifier = GlanceModifier
-                    .padding(10.dp)
                     .defaultWeight()
                     .fillMaxHeight(),
             ) {
 
-                Row(verticalAlignment = Alignment.Vertical.CenterVertically) {
+                Row(
+                    modifier = GlanceModifier.padding(start = 10.dp, top = 10.dp),
+                    verticalAlignment = Alignment.Vertical.CenterVertically
+                ) {
                     Text(
                         text = dateData.time,
                         style = TextStyle(
@@ -175,26 +175,10 @@ class GarakeeWidget : GlanceAppWidget() {
                             color = GlanceTheme.colors.primaryContainer
                         )
                     )
-
-                    if (weather.value != null) {
-                        Spacer(modifier = GlanceModifier.width(10.dp))
-                        Image(
-                            modifier = GlanceModifier.size(30.dp),
-                            provider = ImageProvider(
-                                resId = when (weather.value!!) {
-                                    BarometerWeatherTool.Weather.SUN -> R.drawable.clear_day_24px
-                                    BarometerWeatherTool.Weather.CLOUDY -> R.drawable.cloud_24px
-                                    BarometerWeatherTool.Weather.RAIN -> R.drawable.rainy_24px
-                                }
-                            ),
-                            contentDescription = null,
-                            colorFilter = ColorFilter.tint(GlanceTheme.colors.primaryContainer)
-                        )
-                    }
                 }
 
                 Text(
-                    modifier = GlanceModifier.padding(top = 10.dp),
+                    modifier = GlanceModifier.padding(start = 10.dp, top = 10.dp),
                     text = dateData.calender,
                     style = TextStyle(
                         fontFamily = FontFamily.Monospace,
@@ -204,17 +188,35 @@ class GarakeeWidget : GlanceAppWidget() {
 
                 Spacer(modifier = GlanceModifier.defaultWeight())
 
-                Row {
-                    notificationIconList.value.forEach { icon ->
-                        Image(
-                            modifier = GlanceModifier
-                                .height(20.dp)
-                                .width(30.dp),
-                            provider = ImageProvider(icon),
-                            colorFilter = ColorFilter.tint(GlanceTheme.colors.primaryContainer),
-                            contentDescription = null
-                        )
+                val bottomMessage = buildString {
+                    if (notificationData.value != null) {
+                        if (0 < notificationData.value!!.notificationCount) {
+                            append("通知あり：${notificationData.value!!.notificationCount}")
+                        }
+                        if (notificationData.value!!.hasConversation) {
+                            append("(会話あり)")
+                        }
                     }
+                    if (weather.value != null) {
+                        val text = when (weather.value!!) {
+                            BarometerWeatherTool.Weather.SUN -> "晴れ"
+                            BarometerWeatherTool.Weather.CLOUDY -> "くもり"
+                            BarometerWeatherTool.Weather.RAIN -> "雨"
+                        }
+                        append(" | ")
+                        append("天気：${text}")
+                    }
+                }
+
+                if (bottomMessage.isNotEmpty()) {
+                    Text(
+                        modifier = GlanceModifier
+                            // .background(color = Color.Black.copy(0.5f))
+                            .padding(start = 10.dp)
+                            .fillMaxWidth(),
+                        text = bottomMessage,
+                        style = TextStyle(color = GlanceTheme.colors.primaryContainer)
+                    )
                 }
             }
 

@@ -1,8 +1,9 @@
 package io.github.takusan23.galakeewidget.tool
 
+import android.app.Notification
 import android.content.Context
-import android.graphics.drawable.Icon
 import android.net.Uri
+import android.service.notification.StatusBarNotification
 import androidx.core.net.toUri
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.MutablePreferences
@@ -25,7 +26,7 @@ object DataStore {
     private val SHORTCUT_APP_ID_THREE = stringPreferencesKey("shortcut_appid_three")
 
     /** 通知 */
-    private val NOTIFICATION_LIST = stringPreferencesKey("notification_list")
+    private val NOTIFICATION_DATA = stringPreferencesKey("notification_data2")
 
     /** 複数の Uri を読み出す */
     fun Preferences.getWallpaperUriList(): List<Uri> {
@@ -60,36 +61,27 @@ object DataStore {
         shortcutAppIdData.three?.also { this[SHORTCUT_APP_ID_THREE] = it }
     }
 
-    fun Preferences.getNotificationIconList(context: Context): List<Icon> {
-        val readJson = this[NOTIFICATION_LIST] ?: return emptyList()
-        val jsonArray = JSONArray(readJson)
+    fun Preferences.getNotificationIconList(): NotificationData {
+        val readJson = this[NOTIFICATION_DATA] ?: return NotificationData()
+        val jsonObject = JSONObject(readJson)
 
-        return (0 until jsonArray.length())
-            .map { jsonArray.getJSONObject(it) }
-            .mapNotNull { json ->
-                val applicationId = json.getString("application_id")
-                val resId = json.getInt("res_id")
-                // val applicationInfo = context.packageManager.getApplicationInfo(applicationId, PackageManager.MATCH_UNINSTALLED_PACKAGES or PackageManager.GET_SHARED_LIBRARY_FILES)
-                // ResourcesCompat.getDrawable(context.packageManager.getResourcesForApplication(applicationInfo), resId, context.theme)
-                Icon.createWithResource(applicationId, resId)
-            }
+        return NotificationData(
+            notificationCount = jsonObject.getInt("count"),
+            hasConversation = jsonObject.getBoolean("has_conversation")
+        )
     }
 
-    fun MutablePreferences.saveNotificationIconList(dataList: List<NotificationIconData>) {
-        val jsonArray = JSONArray().apply {
-            dataList.forEach { data ->
-                put(JSONObject().apply {
-                    put("application_id", data.applicationId)
-                    put("res_id", data.resId)
-                })
-            }
+    fun MutablePreferences.saveNotificationIconList(statusBarNotificationList: Array<StatusBarNotification>) {
+        val jsonObject = JSONObject().apply {
+            put("count", statusBarNotificationList.count { it.isClearable }) // 削除可能なものだけ
+            put("has_conversation", statusBarNotificationList.any { it.notification.extras.containsKey(Notification.EXTRA_IS_GROUP_CONVERSATION) }) // 会話かどうか
         }
-        this[NOTIFICATION_LIST] = jsonArray.toString()
+        this[NOTIFICATION_DATA] = jsonObject.toString()
     }
 
-    data class NotificationIconData(
-        val applicationId: String,
-        val resId: Int
+    data class NotificationData(
+        val notificationCount: Int = 0,
+        val hasConversation: Boolean = false
     )
 
     data class ShortcutAppIdData(
