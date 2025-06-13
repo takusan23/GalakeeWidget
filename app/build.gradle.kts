@@ -6,12 +6,12 @@ plugins {
 
 android {
     namespace = "io.github.takusan23.galakeewidget"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "io.github.takusan23.galakeewidget"
         minSdk = 23
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0.0"
 
@@ -54,7 +54,7 @@ dependencies {
     // For interop APIs with Material 3
     implementation("androidx.glance:glance-material3:1.1.1")
     implementation("com.github.bumptech.glide:glide:4.16.0")
-    implementation("androidx.datastore:datastore-preferences:1.1.1")
+    implementation("androidx.datastore:datastore-preferences:1.1.7")
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
