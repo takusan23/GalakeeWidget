@@ -34,7 +34,18 @@
         </activity>
 
         <receiver
-            android:name=".GalakeeWidgetReceiver"
+            android:name=".galakee.GalakeeWidgetReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/garakee_widget_info" />
+        </receiver>
+
+        <receiver
+            android:name=".material3.Material3WidgetReceiver"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />

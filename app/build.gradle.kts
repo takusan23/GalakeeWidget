@@ -55,6 +55,7 @@ dependencies {
     implementation("androidx.glance:glance-material3:1.1.1")
     implementation("com.github.bumptech.glide:glide:4.16.0")
     implementation("androidx.datastore:datastore-preferences:1.1.7")
+    implementation("io.coil-kt.coil3:coil:3.3.0")
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

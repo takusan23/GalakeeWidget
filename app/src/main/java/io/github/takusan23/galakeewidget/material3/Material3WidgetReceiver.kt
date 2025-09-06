@@ -1,9 +1,9 @@
-package io.github.takusan23.galakeewidget
+package io.github.takusan23.galakeewidget.material3
 
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
 
-class GalakeeWidgetReceiver : GlanceAppWidgetReceiver() {
+class Material3WidgetReceiver: GlanceAppWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget
-        get() = GarakeeWidget()
+        get() = Material3Widget()
 }

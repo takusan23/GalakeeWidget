@@ -1,4 +1,4 @@
-package io.github.takusan23.galakeewidget
+package io.github.takusan23.galakeewidget.galakee
 
 import android.content.Context
 import android.content.Intent
@@ -48,6 +48,7 @@ import androidx.glance.text.TextAlign
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
 import com.bumptech.glide.Glide
+import io.github.takusan23.galakeewidget.R
 import io.github.takusan23.galakeewidget.tool.AppListTool
 import io.github.takusan23.galakeewidget.tool.BarometerWeatherTool
 import io.github.takusan23.galakeewidget.tool.DataStore
